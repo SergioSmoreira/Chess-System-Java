@@ -38,6 +38,9 @@ public class ChessMatch {
 		if (!board.thereIsAPiece(position) ) {
 			throw new ChessException("Nao Existe Peca na Posiçao de origem");
 		}
+		if (!board.piece(position).IsThereAnyPossibleMove()) {
+			throw new ChessException("Nao Existe movimentos possiveis Peca escolhida");
+		}
 	}
 	private Piece makeMove(Position source, Position target){
 		Piece p = board.removePiece(source);
