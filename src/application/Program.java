@@ -35,10 +35,16 @@ public class Program {
     ChessPosition target = UI.readChessPosition(sc);
 	
     ChessPiece capturedPiece = chessMatch.performChessMove(source, target);
+    
     if (capturedPiece != null ) {
     	captured.add(capturedPiece);
     }
     
+    if (chessMatch != null) {
+    	 System.out.println(" Informe a Peca a Ser Promovida ( B / Q / N / R ) :");
+    	 String type = sc.nextLine();
+    	 chessMatch.replacePromotedPiece(type);
+    }
 		 }
 		
 		catch (ChessException e) {

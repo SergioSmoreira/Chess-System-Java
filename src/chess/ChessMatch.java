@@ -1,5 +1,6 @@
-7package chess;
+package chess;
 
+import java.security.InvalidParameterException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -22,6 +23,7 @@ public class ChessMatch {
 	private boolean check;
 	private boolean checkMate;
 	private ChessPiece enPassantVulnerable;
+	private ChessPiece promoted;
 	
 	private List<Piece> piecesOnTheBoard = new ArrayList<>();
 	private List<Piece> capturedPieces = new ArrayList<>();
@@ -66,6 +68,10 @@ public class ChessMatch {
 		return enPassantVulnerable;
 	}
 	
+	public ChessPiece getPromoted() {
+		return promoted;
+	}	
+	
 	public boolean[][] possibleMoves(ChessPosition sourcePosition){
 		Position position = sourcePosition.toPosition();
 		validateSourcePosition(position);
@@ -89,6 +95,15 @@ public class ChessMatch {
 	
 	check = (testCheck(opponent(currentPlayer))) ? true : false;
 	
+	// Movimentos Especiais - Troca de Pecas
+	promoted = null;
+	if (movedPiece instanceof Pawn) {
+		if (movedPiece .getColor() == Color.WHITE && target.getRow() == 0 ||movedPiece .getColor() == Color.BLACK && target.getRow() == 7  ) {
+			promoted = (ChessPiece)board.piece(target);
+			promoted = replacePromotedPiece("Q");
+		}
+	}
+	
 	if ( testCheckMate(opponent(currentPlayer))  ) {
 		checkMate=true;
 	}
@@ -107,7 +122,34 @@ public class ChessMatch {
 	
 	return (ChessPiece)capturedPiece;
 	}
-
+	
+	public ChessPiece replacePromotedPiece(String type) {
+		if (promoted == null) {
+			throw new IllegalStateException("Esta Peca Nao pode ser Promovida/Trocada");
+		}
+		if ( !type.equals("B") && !type.equals("N") && !type.equals("R") && !type.equals("Q") ){
+			throw new InvalidParameterException("Tipo de peca solitada para Promocao invalida");
+		}
+		
+		Position pos = promoted.getChessPosition().toPosition();
+		Piece p = board.removePiece(pos);
+		piecesOnTheBoard.remove(p);
+		
+		ChessPiece newPiece = newPiece(type, promoted.getColor()) ;
+		board.placePiece(newPiece, pos);;
+		piecesOnTheBoard.add(newPiece);
+		
+		return newPiece;
+	}
+	
+	private ChessPiece newPiece(String type, Color color) {
+		if (type.equals("B") ) return new Bishop(board, color);
+		if (type.equals("N") ) return new Knight(board, color);
+		if (type.equals("Q") ) return new Queen(board, color);
+		return new Rook(board, color);
+		
+	}
+	
 	private void undoMove(Position source, Position target, Piece capturedPiece) {
 	
 		ChessPiece p = (ChessPiece)board.removePiece(target);
@@ -175,6 +217,9 @@ public class ChessMatch {
 		throw new ChessException("A Peca Escolhida nao pode se mover para posicao de destino");
 	}	
 	}
+	
+	
+	
 	private Piece makeMove(Position source, Position target){
 		ChessPiece p = (ChessPiece)board.removePiece(source);
 		p.increaseMoveCount();
@@ -330,3 +375,4 @@ public class ChessMatch {
 	}
 	
 }
+
